@@ -7,3 +7,15 @@
     margin: 0 10px;
   }
 }
+
+
+.question-item {
+  .right-separator {
+    border-right: 1px solid lightgrey;
+    text-align: center;
+
+    .user-img {
+      border-radius: 50%;
+    }
+  }
+}

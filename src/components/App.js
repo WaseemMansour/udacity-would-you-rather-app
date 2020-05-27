@@ -7,6 +7,7 @@ import { connect } from 'react-redux'
 import Login from './Login';
 import Dashboard from './Dashboard'
 import Leaderboard from './Leaderboard';
+import NewQuestion from './NewQuestion';
 
 class App extends React.Component {
 
@@ -93,9 +94,16 @@ class App extends React.Component {
 
                 <Route
                   exact
+                  path="/add"
+                  render={()=> (
+                    <NewQuestion  />
+                  )}
+                />
+
+                <Route
+                  exact
                   path="*"
                     render={() => (
-                        // <WizardForm fdle={hash === "#fdle"} />
                         <h1 className="prime-color mt-5">Page Not Found</h1>
                     )}
                 />
