@@ -1,13 +1,16 @@
 import React from 'react';
-import { Route, Switch, Link } from "react-router-dom";
+import { Route, Switch, NavLink } from "react-router-dom";
 
 import { handleInitialData } from '../actions/shared'
+import { setAuthedUser } from '../actions/authedUser'
 import { connect } from 'react-redux'
 
 import Login from './Login';
 import Dashboard from './Dashboard'
 import Leaderboard from './Leaderboard';
 import NewQuestion from './NewQuestion';
+import QuestionItem from './QuestionItem';
+import NotFound from './NotFound';
 
 class App extends React.Component {
 
@@ -16,7 +19,7 @@ class App extends React.Component {
   }
 
   render() {
-    const { authedUser, users } = this.props;
+    const { authedUser, users, qs } = this.props;
     const user = users[authedUser];
     
     return (
@@ -26,35 +29,38 @@ class App extends React.Component {
             <button className="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarColor02" aria-controls="navbarColor02" aria-expanded="false" aria-label="Toggle navigation">
               <span className="navbar-toggler-icon"></span>
             </button>
-  
             <div className="collapse navbar-collapse" id="navbarColor02">
               <ul className="navbar-nav mr-auto">
-                <li className="nav-item active">
-                  <Link 
+                <li className="nav-item ">
+                  <NavLink
+                    exact
+                    activeClassName="active" 
                     className="nav-link"
                     to={{
                         pathname: "/",
                     }}>
                     Home 
-                  </Link>
+                  </NavLink>
                 </li>
                 <li className="nav-item">
-                  <Link
+                  <NavLink
+                    activeClassName="active"
                     className="nav-link" 
                     to={{
                         pathname: "/add",
                     }}>
                     New Question
-                  </Link>
+                  </NavLink>
                 </li>
                 <li className="nav-item">
-                  <Link
+                  <NavLink
+                    activeClassName="active"
                     className="nav-link" 
                     to={{
                         pathname: "/leaderboard",
                     }}>
                     Leader Board 
-                  </Link>
+                  </NavLink>
                 </li>
               </ul>
               <div className="userInfo ml-auto">
@@ -62,54 +68,73 @@ class App extends React.Component {
                   ? null
                   : <span className="text-white">Hello, {user.name} 
                       <img className="user-img" src={user.avatarURL} width="50px" alt="" /> 
-                      Logout
+                      <span className="hyper-link" onClick={()=> this.props.dispatch(setAuthedUser(null))}>Logout</span>
                     </span>
                 }
               </div>
             </div>
           </div>
-          
         </nav>
   
-        <div>
-          {this.props.loading === true
-            ? <Login users={users} />
-            : 
-              <Switch>
-                <Route
-                    exact
-                    path="/"
-                    render={() => (
-                        <Dashboard authedUser={authedUser} />
-                    )}
-                />
+        <div className="container">
+          <div className="row">
+            <div className="col-sm-8 offset-sm-2 col-md-6 offset-md-3 mt-5 mb-5">
+              {this.props.loading === true
+                ? <Login users={users} />
+                : 
+                  <Switch>
+                    <Route
+                        exact
+                        path="/"
+                        render={() => (
+                            <Dashboard questions={qs} users={users} authedUser={authedUser} />
+                        )}
+                    />
 
-                <Route
-                  exact
-                  path="/leaderboard"
-                  render={()=> (
-                    <Leaderboard  />
-                  )}
-                />
+                    <Route
+                      exact
+                      path="/leaderboard"
+                      render={()=> (
+                        <Leaderboard users={users} />
+                      )}
+                    />
 
-                <Route
-                  exact
-                  path="/add"
-                  render={()=> (
-                    <NewQuestion  />
-                  )}
-                />
+                    <Route
+                      exact
+                      path="/add"
+                      render={()=> (
+                        <NewQuestion authedUser={authedUser} />
+                      )}
+                    />
+                  
+                    <Route
+                      exact
+                      path="/questions/:question_id"
+                      render={(props)=> {
+                        const qID = props.match.params.question_id
+                        const q = qs[qID]
+                        return (
+                          q ?
+                          <QuestionItem data={q} authedUser={authedUser} author={users[q.author]} singleView={true} /> 
+                          :
+                          <NotFound />
+                        )}
+                      }
 
-                <Route
-                  exact
-                  path="*"
-                    render={() => (
-                        <h1 className="prime-color mt-5">Page Not Found</h1>
-                    )}
-                />
-              </Switch>
-                
-          }
+                    />
+                    
+                    <Route
+                      exact
+                      path="*"
+                        render={() => (
+                          <NotFound />
+                        )}
+                    />
+                  </Switch>
+                    
+              }
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -118,14 +143,16 @@ class App extends React.Component {
 }
 
 
-function mapStateToProps ({ authedUser, users }) {
+function mapStateToProps ({ authedUser, users, questions }) {
 
-  console.log(authedUser, users)
   return {
     loading: authedUser === null,
     users: users,
-    authedUser: authedUser
+    authedUser: authedUser,
+    qs: questions
   }
 }
+
+
 
 export default connect(mapStateToProps)(App)
